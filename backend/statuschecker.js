@@ -92,7 +92,7 @@ function getStatus(type, force, callback) {
         if (typeof data !== 'undefined' && data != null && !force) {
             callback(JSON.parse(data));
         } else {
-            log("Memcached data was " (data === null ? "null" : (force ? "insufficient" : "unknown") + " for " + type + ", grabbing from live server");
+            log("Memcached data was " + (data === null ? "null" : (force ? "insufficient" : "unknown") + " for " + type + ", grabbing from live server"));
             getLiveStatus(type, function(data) {
                 cb(data);
             });
