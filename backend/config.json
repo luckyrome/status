@@ -1,0 +1,73 @@
+{
+    "port" : 3000,
+    "storage" : {
+        "memcache" : {
+            "port" : 11211,
+            "host" : "localhost",
+            "ttl" : 60
+        }
+    },
+    "responses" : {
+        "BAD" : "BAD",
+        "OK" : "OK",
+        "MEH" : "MEH",
+        "status_cant_tell" : {
+            "status" : "MEH",
+            "details" : "Something might be wrong with our server... check back later?",
+            "last_checked" : -1
+        },
+        "status_misconfigured" : {
+            "status" : "MEH",
+            "details" : "The server has been misconfigured. Please call someone. Mmmkay?",
+            "last_checked" : -1
+        }
+    },
+    "types" : {
+        "facebook" : {
+            "name" : "Facebook",
+            "format" : "json",
+            "request_options" : {
+                "url" : "https://www.facebook.com/feeds/api_status.php",
+                "headers" : {
+                    "User-Agent" : "ramen-express"
+                }
+            },
+            "status_key" : "current.health",
+            "status_ok" : 1,
+            "details_key" : "current.subject"
+        }, 
+        "facebookpush" : {
+            "name" : "Facebook Push",
+            "format" : "json",
+            "request_options" : {
+                "url" : "https://www.facebook.com/feeds/api_status.php",
+                "headers" : {
+                    "User-Agent" : "ramen-express"
+                }
+            },
+            "status_key" : "push.status",
+            "status_ok" : "Complete",
+            "details_key" : "push.updated"
+        },
+        "xbox_core" : {
+            "name" : "Xbox Live Core Services",
+            "format" : "html",
+            "request_options" : {
+                "url" : "http://support.xbox.com/en-US/xbox-live-status"
+            },
+            "status_key" : "class=\"service ([a-z]+)\" id=\"XboxLiveCoreServices\"",
+            "status_ok" : "active",
+            "details_key" : "<h3>Xbox Live Core Services.*>([a-zA-Z ]+)<\/span>"
+        },
+        "xbox_website" : {
+            "name" : "Xbox Live Website",
+            "format" : "html",
+            "request_options" : {
+                "url" : "http://support.xbox.com/en-US/xbox-live-status"
+            },
+            "status_key" : "class=\"service ([a-z]+)\" id=\"Website\"",
+            "status_ok" : "active",
+            "details_key" : "<h3>Website.*>([a-zA-Z ]+)<\/span>"
+        }
+    }
+}

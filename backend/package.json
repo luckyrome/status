@@ -1,11 +1,10 @@
 {
     "name": "status",
     "description": "an external api caller which can cache status",
-    "main": "./index",
     "author": {
         "name": "Ramil Nobleza"
     },
-    "version": "0.0.1a",
+    "version": "0.0.2a",
     "repository": {
         "type": "git",
         "url": "http://github.com/luckyrome/status"
@@ -24,7 +23,7 @@
     "homepage": "https://github.com/luckyrome/status",
     "dependencies" : {
         "express": "3.4.8",
-        "request": "2.36.0"
-        
+        "request": "2.36.0",
+        "memcache" : "0.3.0"
     }
 }
