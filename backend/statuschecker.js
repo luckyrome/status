@@ -86,18 +86,30 @@ function getStatus(type, force, callback) {
 
     var cb = callback || function() {};
 
-    // try memcached first then go to the live site
-    memcachedClient.get(type, function(error, data) {
-        log("Got response from memcached!");
-        if (typeof data !== 'undefined' && data != null && !force) {
-            callback(JSON.parse(data));
-        } else {
-            log("Memcached data was " + (data === null ? "null" : (force ? "insufficient" : "unknown") + " for " + type + ", grabbing from live server"));
-            getLiveStatus(type, function(data) {
-                cb(data);
-            });
-        }
-    });
+    if (!sanityCheckType(type)) {
+        response_json = _.extend(responses.status_invalid_type, {"id" : type}, true);
+        return cb(response_json);
+    }
+
+    if (force) {
+        getLiveStatus(type, function(data) {
+            cb(data);
+        });         
+    } else {
+        // try memcached first then go to the live site
+        memcachedClient.get(type, function(error, data) {
+            log("Got response from memcached!");
+            if (typeof data !== 'undefined' && data != null && !force) {
+                cb(JSON.parse(data));
+            } else {
+                log("Memcached data was null for " + type + ", grabbing from live server");
+                getLiveStatus(type, function(data) {
+                    cb(data);
+                });
+            }
+        });
+    }
+    
 };
 
 /**
@@ -191,14 +203,9 @@ app.get("/:type/status", function(request, response) {
     }
 
     var type = request.params.type;
-    var validType = sanityCheckType(type);
-    if (validType) {
-        getStatus(type, false, function(data) {
-            response.send(data);
-        });
-    } else {
-        response.send(responses.status_misconfigured);
-    }
+    getStatus(type, false, function(data) {
+        response.send(data);
+    });
 });
 
 /*

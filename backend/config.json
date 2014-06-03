@@ -4,7 +4,7 @@
         "memcache" : {
             "port" : 11211,
             "host" : "localhost",
-            "ttl" : 60
+            "ttl" : 86400
         }
     },
     "responses" : {
@@ -15,6 +15,10 @@
             "status" : "MEH",
             "details" : "Something might be wrong with our server... check back later?",
             "last_checked" : -1
+        },
+        "status_invalid_type" : {
+            "error" : "Invalid configuration type!",
+            "details" : "This type was not configured, please reconfigure and try again"
         },
         "status_misconfigured" : {
             "error" : "Configuration error!",
