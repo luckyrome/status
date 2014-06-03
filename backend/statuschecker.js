@@ -2,6 +2,7 @@
 var express = require('express');
 var request = require('request');
 var memcache = require('memcache');
+var _ = require('underscore');
 
 // configurations
 var config = require('./config');
@@ -28,6 +29,7 @@ var log = function(msg) {
 /**
 * Gets status straight from a webservice. Validation of configs should have already happened
 *
+* @param type {String} the type of status (service) we're querying
 * @param callback {Function(data)} 
 */
 function getLiveStatus(type, callback) {
@@ -58,6 +60,7 @@ function getLiveStatus(type, callback) {
         }
 
         var response = {
+            "id" : type,
             "status" : (status === typeconf.status_ok) ? responses.OK : responses.BAD,
             "details" : details,
             "last_checked" : last_checked
@@ -72,19 +75,24 @@ function getLiveStatus(type, callback) {
 }
 
 /**
-    Checks a Status - will check cache first
-*/
-function getStatus(type, callback) {
+ * Checks a status will check cache first, and resort to 
+ * the live webservice if nothing comes up
+ *
+ * @param type {String} the type of status (service) we're querying
+ * @param force {Boolean} whether or not to go to the live server
+ * @param callback {Function(data)} 
+ */
+function getStatus(type, force, callback) {
 
     var cb = callback || function() {};
 
     // try memcached first then go to the live site
     memcachedClient.get(type, function(error, data) {
         log("Got response from memcached!");
-        if (typeof data !== 'undefined' && data != null) {
+        if (typeof data !== 'undefined' && data != null && !force) {
             callback(JSON.parse(data));
         } else {
-            log("Memcached data was null for " + type + ", grabbing from live server");
+            log("Memcached data was " (data === null ? "null" : (force ? "insufficient" : "unknown") + " for " + type + ", grabbing from live server");
             getLiveStatus(type, function(data) {
                 cb(data);
             });
@@ -122,11 +130,19 @@ function extractJsonParam(data, param) {
     }
 };
 
-function extractStringParam(data, param) {
-    if (typeof param === 'undefined' || !param) {
+/**
+ * Extracts some substring from a data argument which is supposedly a string
+ * Also will do string matching if no matching groups inside pattern
+ *
+ * @param data {String} data to extract from
+ * @param pattern {String} the regex pattern to use for extraction
+ * @return {String|null} the match, or null if no match.
+ */
+function extractStringParam(data, pattern) {
+    if (typeof pattern === 'undefined' || !pattern) {
         return null;
     }
-    var regex = new RegExp(param);
+    var regex = new RegExp(pattern);
     if (regex != null) {
         var matchData = regex.exec(data);
         if (typeof matchData !== 'undefined' && matchData !== null) {
@@ -160,6 +176,7 @@ function sanityCheckType(type) {
 /*
     Gets a status for a single service. Status can look like:
     {
+        "id" : "facebook",
         "status" : "OK|BAD|MEH",
         "details" : "Some English notes",
         "last_checked" : "219849216"
@@ -173,11 +190,10 @@ app.get("/:type/status", function(request, response) {
         callback(STATUS_CANT_TELL);
     }
 
-    // todo: sanity check type argument
     var type = request.params.type;
     var validType = sanityCheckType(type);
     if (validType) {
-        getStatus(type, function(data) {
+        getStatus(type, false, function(data) {
             response.send(data);
         });
     } else {
@@ -189,18 +205,39 @@ app.get("/:type/status", function(request, response) {
     Gets all statuses.
     Returns something like:
     [{
+        "id" : "facebook",
         "status" : "OK|BAD|MEH",
         "details" : "Some English notes",
         "last_checked" : "081023123"
     }, {
+        "id" : "whatever",
         "status" : "OK|BAD|MEH",
         "details" : "Other English notes",
         "last_checked" : "23821841"
     }]
 */
 app.get("/status", function(request, response) {
-    response.send({
-        "status" : "not implemented, go away yeti-face!"
+    var typequery = request.query.types;
+    if (typeof typequery === 'undefined' || !typequery)  {
+        response.send(responses.status_give_me_types);
+        return;
+    }
+
+    var types = typequery.split(",");
+
+    var completedStatus = 0;
+    var finishUp = function() {
+        completedStatus++;
+        if(completedStatus === Object.keys(types).length) {
+            response.send(bigStatus);
+        }
+    }
+    var bigStatus = [];
+    _.each(types, function(type) {
+        getStatus(type, false, function(data){
+            bigStatus.push(data);
+            finishUp();
+        });
     });
 });
 
@@ -213,6 +250,7 @@ app.post("/status", function(request, response) {
     });
 });
 
+// fire it up!
 var server = app.listen(config.port, function() {
     log("Hello World, listening");
 });

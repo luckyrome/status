@@ -17,10 +17,13 @@
             "last_checked" : -1
         },
         "status_misconfigured" : {
-            "status" : "MEH",
-            "details" : "The server has been misconfigured. Please call someone. Mmmkay?",
-            "last_checked" : -1
-        }
+            "error" : "Configuration error!",
+            "details" : "The server has been misconfigured. Please call someone. Mmmkay?"
+        },
+        "status_give_me_types" : [{
+            "error" : "No status types provided",
+            "details" : "You gotta give me types mang"
+        }]
     },
     "types" : {
         "facebook" : {

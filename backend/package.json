@@ -24,6 +24,7 @@
     "dependencies" : {
         "express": "3.4.8",
         "request": "2.36.0",
-        "memcache" : "0.3.0"
+        "memcache" : "0.3.0",
+        "underscore" : "1.6.0"
     }
 }
