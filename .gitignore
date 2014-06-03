@@ -1,3 +1,6 @@
+# ide crumbs
+.idea
+
 # Logs
 logs
 *.log
