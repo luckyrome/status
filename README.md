@@ -15,7 +15,7 @@ To Deploy:
 - Backend API
     - `cd ./backend/ && npm install && node ./statuschecker.js`
 - Frontend UI
-    - Nothing yet. Probably something magical with symlinking at some point :)
+    - `npm install && grunt` - deploys to a static webserver @todo: make this destination configurable!
 
 Testing:
 - Coming soon!

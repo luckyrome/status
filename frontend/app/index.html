@@ -1,0 +1,35 @@
+<!doctype html>
+<html ng-app="dash">
+    <head>
+        <title>Check me out it&apos;s angular!</title>
+        <!-- includes - css first to avoid FOUC -->
+        <link type="text/css" rel="stylesheet" href="./css/lib/bootstrap.min.css" />
+        <link type="text/css" rel="stylesheet" href="./css/lib/bootstrap-theme.min.css" />
+        <link type="text/css" rel="stylesheet" href="./css/dash.css" />
+
+        <!-- a little sad that bootstrap requires jQuery -->
+        <script type="text/javascript" src="./js/lib/jquery.min.js"></script>
+        <script type="text/javascript" src="./js/lib/bootstrap.min.js"></script>
+        <script type="text/javascript" src="./js/lib/angular.min.js"></script>
+        <script type="text/javascript" src="./js/lib/angular-resource.min.js"></script>
+        <script type="text/javascript" src="./js/dash.js"></script>
+    </head>
+    <body ng-controller="DashController as dash">
+        <div class="container">
+            <nav class="navbar navbar-default" role="navigation">
+                <ul class="nav navbar-nav">
+                    <li class="navbar-brand brand">Status!</li>
+                </ul>
+            </nav>
+            <ul>
+                <li class="service {{service.id | lowercase}} {{service.status | lowercase}}" ng-repeat="service in dash.serviceList">
+                    <div class="status"><label>Status:</label><span>{{service.status}}</span></div>
+                    <div class="details"><label>Details:</label><span>{{service.details}}</span></div>
+                    <div class="last_checked"><label>Last Checked:</label><span>{{service.last_checked | date : large}}</span><div>
+                    <!--  -->
+                    <!-- <button class="button" ng-click="dash.refresh(service.id)"></button> -->
+                </li>
+            </ul>
+        </div>
+    </body>
+</html>
