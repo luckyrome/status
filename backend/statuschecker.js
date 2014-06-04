@@ -18,6 +18,14 @@ var app = express();
 var memcachedClient = new memcache.Client(memcacheConfig.port, memcacheConfig.host);
 memcachedClient.connect();
 
+/**
+ * Sets the Access-Control-Allow-Origin header and does other globally good stuff
+ */
+app.get('/*',function(request, response, next) {
+    response.set("Access-Control-Allow-Origin", "http://localhost");
+    next(); // http://expressjs.com/guide.html#passing-route control
+});
+
 // constants from config
 var responses = config.responses;
 
