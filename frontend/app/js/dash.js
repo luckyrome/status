@@ -1,4 +1,4 @@
-/* global : angular */
+/* globals angular */
 var dash = angular.module('dash', ['ngResource']);
 
 /**

@@ -7,7 +7,7 @@ module.exports = function(grunt) {
         copy: {
           deploy: {
             files: [
-              {expand: true, cwd: "app", src: ['**/*'], dest: '/var/www/status/'},
+              {expand: true, cwd: "app", src: ['**/*'], dest: '/var/www/html/status/'},
             ]
           }
         },

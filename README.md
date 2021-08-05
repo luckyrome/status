@@ -15,6 +15,7 @@ To Deploy:
 - Backend API
     - `cd ./backend/ && npm install && node ./statuschecker.js`
 - Frontend UI
+    - Prereqs: http server
     - `npm install && grunt` - deploys to a static webserver @todo: make this destination configurable!
 
 Testing:

@@ -1,8 +1,7 @@
 // external imports
 var express = require('express');
 var request = require('request');
-var memcache = require('memcache');
-var _ = require('underscore');
+var Memcached = require('memcached');
 
 // configurations
 var config = require('./config');
@@ -14,9 +13,13 @@ if (typeof config === 'undefined' || !config) {
 var memcacheConfig = config.storage.memcache;
 
 // initialization
-var app = express();
-var memcachedClient = new memcache.Client(memcacheConfig.port, memcacheConfig.host);
-memcachedClient.connect();
+const app = express();
+const connectString = `${memcacheConfig.host}:${memcacheConfig.port}`;
+const memcachedClient = new Memcached([connectString]);
+memcachedClient.connect(connectString, () => {});
+
+memcachedClient.on('failure', function( details ){ log( "Server " + details.server + "went down due to: " + details.messages.join( '' ) ) });
+memcachedClient.on('reconnecting', function( details ){ log( "Total downtime caused by server " + details.server + " :" + details.totalDownTime + "ms")});
 
 /**
  * Sets the Access-Control-Allow-Origin header and does other globally good stuff
@@ -78,7 +81,7 @@ function getLiveStatus(type, callback) {
             return cb(response);
         };
 
-        memcachedClient.set(type, JSON.stringify(response), finishUp, memcacheConfig.ttl || 1800);
+        memcachedClient.set(type, JSON.stringify(response), memcacheConfig.ttl || 1800, finishUp);
     });
 }
 
@@ -91,19 +94,22 @@ function getLiveStatus(type, callback) {
  * @param callback {Function(data)} 
  */
 function getStatus(type, force, callback) {
-
+    log(`Getting individual status ${type}`);
     var cb = callback || function() {};
 
     if (!sanityCheckType(type)) {
-        response_json = _.extend(responses.status_invalid_type, {"id" : type}, true);
+        log(`Invalid type ${type}`);
+        response_json = Object.assign(responses.status_invalid_type, {"id" : type});
         return cb(response_json);
     }
 
     if (force) {
+        log(`Forcing live status on ${type}`);
         getLiveStatus(type, function(data) {
             cb(data);
         });         
     } else {
+        log(`Looking for memcached`);
         // try memcached first then go to the live site
         memcachedClient.get(type, function(error, data) {
             log("Got response from memcached!");
@@ -241,14 +247,16 @@ app.get("/status", function(request, response) {
     var types = typequery.split(",");
 
     var completedStatus = 0;
-    var finishUp = function() {
+    var finishUp = function(...args) {
+        
         completedStatus++;
-        if(completedStatus === Object.keys(types).length) {
+        log(`finished one ${args} completed status count ${completedStatus}`);
+        if (completedStatus === Object.keys(types).length) {
             response.send(bigStatus);
         }
     }
     var bigStatus = [];
-    _.each(types, function(type) {
+    types.forEach((type) => {
         getStatus(type, false, function(data){
             bigStatus.push(data);
             finishUp();
